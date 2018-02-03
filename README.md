@@ -56,7 +56,6 @@ let elementInsideIframe = "<div draggable='true'>";
 elementInsideIframe.addEventListener("dragstart", event => {
   //send message to parent somehow.
   //usually this can be done with https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
-  //or maybe via another message bus
   Window.parent.postMessage("dragging!", "*", false);
   //The last arg can be a Transferable Object, but I haven't used this before.
   //https://developer.mozilla.org/en-US/docs/Web/API/Transferable
