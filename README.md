@@ -130,4 +130,29 @@ function receiveMessage(event)
 window.addEventListener("message", receiveMessage, false);
 ```
 
+Example styling for the overlay
+```css
+.overlay {
+    position: fixed;
+    display: block;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: pink;
+    z-index: 50;
+    opacity: 0.3;
+
+    .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 50px;
+        color: green;
+        transform: translate(-50%, -50%);
+    }
+}
+```
 TODO: dragging from parent to iframe. (very similar, just in reverse);
