@@ -1,10 +1,10 @@
-Motivation:
+# Drag/Drop between iframes and parent(s).
 
 It's non-trivial to construct a nice DnD experience when your app uses iframes.
 
 This should serve as a reference or a reminder to future me on how to do this nicely.
 
-Method 1: Drag and drop with an iframe on a different origin. i.e:
+## Use case: Drag and drop with an iframe on a different origin
 
         |------------------------------------------------------|
         |main app on good.com                                  |
@@ -36,18 +36,19 @@ and the root document without some extra work.
 We needed this exact functionality on a project I've been working on, but it took a fair bit of research
 before I found a reasonably clean way to do this.
 
-iframe -> main:
+
+## iframe -> parent
 
 1. When user starts dragging, send a message the main window to create an invisible (div) element
    and place it over the whole page.
-2. When it's dropped,it's actually on our invisible div (instead of the iframe or the page).
+2. When it's dropped, it's actually on our invisible div (instead of the iframe or the page).
 3. But, you have to handle the dragend event in the iframe, and send the coords/data to the parent frame.
 4. Inside the parent/main, remove the overlay, and use document.elementFromPoint(message.mouse.x, message.mouse.y)
    to work out where it's been dropped.
 5. Now you have two choices. Either synthesise a drop event on the element you got in step 4. Or,
    depending on your application, just programatically trigger what would have happened if you'd done the drop.
 
-Basically:
+### Sample code
 
 ```js
 /** Iframe code **/
@@ -155,4 +156,50 @@ Example styling for the overlay
     }
 }
 ```
-TODO: dragging from parent to iframe. (very similar, just in reverse);
+
+## Parents -> iframe
+Very similar concept. A method I found pretty reasonable was to put a `div` as a sibling for each iframe. This div acts in a similar manner as the previous overlay method, but you have an overlay for each iframe rather than over the whole viewpoint. 
+
+So keeping the iframe cover div in the dom from the time the iframe exists, style it like: 
+
+```css
+.iframe-cover {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    z-index: 3; // This may need to be larger depending on the other z-indices in your application.
+    display: none;
+    background-color: rgba(255, 255, 255, 0.01);
+}
+```
+
+And then for the element you're dragging:
+
+```javascript
+element.addEventListener("dragstart", event => {
+        // display the overlay. Using JQ but can be done with web apis.
+        $(".iframe-cover").css({'display':'block'})
+        // other logic for this event
+       });
+       
+element.addEventListener("dragend", event => {
+        // remove the overlay after drag ends.
+        $(".iframe-cover").css({'display':'none'})
+        // other logic for this event
+       });       
+```
+
+And wherever you injected the overlay into the dom, let's assume you have a reference to it as `iframeCover`:
+```javascript
+   iframeCover.addEventListener("drop", event => {
+        // grab whatever you need from the event dataTransfer
+        // send it to the iframe via postMessage similar to above (but parent -> child)
+   })
+```
+
+You can also use this method for supporting drag/drop between two different iframes (on different domains). 
+You just have to make sure you trigger the overlays to display when the parent receives a drag-start message from an iframe.
+
+
